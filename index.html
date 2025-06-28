@@ -34,10 +34,11 @@
             background-color: var(--background-color);
             padding: 20px;
             color: var(--text-color);
+            overflow-x: hidden;
         }
         
         .container {
-            max-width: 960px; /* Ancho reducido para una mejor vista en PC */
+            max-width: 960px;
             margin: 20px auto;
             background-color: var(--container-bg);
             padding: 40px;
@@ -49,26 +50,26 @@
             text-align: center;
             color: var(--primary-color);
             margin-bottom: 40px;
-            font-family: 'Calibri', sans-serif; /* Fuente Calibri solo para el título principal */
+            font-family: 'Calibri', sans-serif;
             font-size: 40px; 
             font-weight: 700; 
             text-transform: uppercase;
         }
-        
+
         .form-section, .descuentos-section, .result-section {
             margin-bottom: 30px;
         }
         
         .form-row {
             display: grid;
-            grid-template-columns: 200px 1fr; /* Diseño de dos columnas para PC */
+            grid-template-columns: 200px 1fr;
             gap: 20px;
             margin-bottom: 20px;
             align-items: center;
         }
         
         label {
-            font-family: 'Poppins', sans-serif; /* Fuente Poppins para etiquetas */
+            font-family: 'Poppins', sans-serif;
             font-weight: 700;
             color: var(--label-color);
             font-size: 18px;
@@ -91,7 +92,7 @@
             border-color: var(--primary-color);
             box-shadow: 0 0 10px 2px rgba(15, 105, 180, 0.4);
         }
-        
+
         .descuentos-section {
             background-color: var(--section-bg);
             padding: 25px;
@@ -178,54 +179,71 @@
         .pdf-narrow { width: 5% !important; padding: 8px 2px !important; }
         .pdf-no-bold { font-weight: normal !important; }
 
-        /* Estilos para la animación de carga */
+        /* --- Estilos para la animación de subida --- */
         .loader-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            display: none; /* Oculto por defecto */
-            justify-content: center;
-            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5); /* Fondo más sutil */
+            display: none;
             z-index: 1000;
-            flex-direction: column;
+        }
+        
+        .upload-box {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--primary-color);
             color: white;
+            padding: 12px 22px;
+            border-radius: 12px;
             font-family: 'Poppins', sans-serif;
-            font-size: 20px;
+            font-size: 18px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            opacity: 0;
         }
 
-        .loader {
-            border: 8px solid #f3f3f3;
-            border-top: 8px solid var(--primary-color);
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+        .upload-box svg {
+            width: 24px;
+            height: 24px;
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loader-overlay.active .upload-box {
+            animation: appear-and-fly-to-corner 2.2s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
         }
-
+        
+        @keyframes appear-and-fly-to-corner {
+            0% {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            25% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            75% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+                top: 50%;
+                left: 50%;
+            }
+            100% {
+                transform: translate(0, 0) scale(0);
+                opacity: 0;
+                top: 20px;
+                left: 95%;
+            }
+        }
         
         @media (max-width: 768px) {
-            body { padding: 10px; }
-            .container { padding: 20px; max-width: 100%; /* El contenedor se vuelve fluido en móviles */ }
-            h1 { font-size: 30px; }
-            
-            .form-row {
-                grid-template-columns: 1fr; /* Diseño de una columna para móviles */
-                gap: 10px;
-                margin-bottom: 20px;
-            }
-            
-            label { font-size: 16px; margin-bottom: 5px; display: block; }
-            input, select { font-size: 16px !important; }
-            button { width: 100%; font-size: 18px; }
+            .container { padding: 20px; max-width: 100%; }
+            .form-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -291,7 +309,6 @@
         </div>
     </div>
     
-    <!-- Contenido para PDF (oculto) -->
     <div id="pdf-content">
         <table class="pdf-table">
             <tr>
@@ -363,10 +380,12 @@
         </table>
     </div>
 
-    <!-- Contenedor para la animación de carga -->
+    <!-- Contenedor para la animación de descarga -->
     <div id="loader-overlay" class="loader-overlay">
-        <div class="loader"></div>
-        <p>Generando PDF...</p>
+        <div class="upload-box">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13,9V3.5L18.5,9H13Z" /></svg>
+            <span>Generando PDF...</span>
+        </div>
     </div>
     
     <script>
@@ -441,38 +460,33 @@
 
         async function generarPDF() {
             const loader = document.getElementById('loader-overlay');
-            loader.style.display = 'flex'; // Mostrar animación de carga
+            const button = document.querySelector('.button-container button');
 
-            actualizarPDF();
-            const pdfContent = document.getElementById('pdf-content');
-            pdfContent.style.display = 'block';
+            loader.style.display = 'block';
+            setTimeout(() => loader.classList.add('active'), 10);
+            button.disabled = true;
             
             try {
+                actualizarPDF();
+                const pdfContent = document.getElementById('pdf-content');
+                pdfContent.style.display = 'block';
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'mm',
-                    format: 'letter'
-                });
-                
-                const canvas = await html2canvas(pdfContent, {
-                    scale: 2,
-                    backgroundColor: '#ffffff',
-                    useCORS: true 
-                });
-                
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'letter' });
+                const canvas = await html2canvas(pdfContent, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
                 const imgData = canvas.toDataURL('image/png');
                 const pdfWidth = pdf.internal.pageSize.getWidth();
                 const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-                
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
                 pdf.save('honorario_descuento.pdf');
-                
+                pdfContent.style.display = 'none';
             } catch (error) {
                 console.error('Error al generar PDF:', error);
             } finally {
-                pdfContent.style.display = 'none';
-                loader.style.display = 'none'; // Ocultar animación de carga
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                    loader.classList.remove('active');
+                    button.disabled = false;
+                }, 2200);
             }
         }
         
