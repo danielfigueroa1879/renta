@@ -1,1 +1,518 @@
-<h1>renta</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Honorario Descuento - Generador PDF</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .form-section {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        
+        label {
+            font-weight: bold;
+            color: #555;
+        }
+        
+        input[type="number"], input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .descuentos-section {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        .descuentos-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .result-section {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .total-row {
+            font-weight: bold;
+            font-size: 18px;
+            border-top: 2px solid #4CAF50;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        
+        /* Estilos para el PDF (oculto en la vista normal) */
+        #pdf-content {
+            display: none;
+            width: 816px; /* 8.5 pulgadas * 96 DPI */
+            padding: 40px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: fixed;
+            font-weight: bold;
+        }
+        
+        .pdf-table td {
+            padding: 8px;
+            border: 1px solid #000;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .pdf-table td:nth-child(1) {
+            width: 40%;
+        }
+        
+        .pdf-table td:nth-child(2) {
+            width: 10%;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        
+        .pdf-table td:nth-child(3) {
+            width: 15%;
+        }
+        
+        .pdf-table td:nth-child(4) {
+            width: 32%;
+        }
+        
+        .pdf-table td:nth-child(2),
+        .pdf-table td:nth-child(3),
+        .pdf-table td:nth-child(4) {
+            text-align: center !important;
+        }
+        
+        .pdf-header {
+            font-weight: bold;
+        }
+        
+        .pdf-value {
+            text-align: right;
+        }
+        
+        .pdf-center {
+            text-align: center !important;
+        }
+        
+        .pdf-gray-bg {
+            background-color: #d0d0d0 !important;
+        }
+        
+        /* Estilo específico para columna 2 en filas de descuentos */
+        .pdf-narrow {
+            width: 5% !important;
+            padding: 8px 2px !important;
+        }
+        
+        /* Quitar negrilla de números específicos */
+        .pdf-no-bold {
+            font-weight: normal !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            label {
+                margin-bottom: 5px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generador de Honorario con Descuento</h1>
+        
+        <div class="form-section">
+            <div class="form-row">
+                <label for="rentaBruta">RENTA BRUTA:</label>
+                <input type="number" id="rentaBruta" value="716705" min="0" onchange="calcularDescuentos()">
+            </div>
+            
+            <div class="form-row">
+                <label for="jornada">JORNADA HR. SEMANAL:</label>
+                <input type="number" id="jornada" value="44" min="1" max="45" onchange="calcularDescuentos()">
+            </div>
+        </div>
+        
+        <div class="descuentos-section">
+            <div class="descuentos-title">DETALLE DESCUENTOS</div>
+            
+            <div class="form-row">
+                <label for="hrAtraso">HR. ATRASO:</label>
+                <input type="number" id="hrAtraso" value="0" min="0" onchange="calcularDescuentos()">
+            </div>
+            
+            <div class="form-row">
+                <label for="hrIncumplimiento">HR. INCUMPLIMIENTO:</label>
+                <input type="number" id="hrIncumplimiento" value="0" min="0" onchange="calcularDescuentos()">
+            </div>
+            
+            <div class="form-row">
+                <label for="dias">DIAS:</label>
+                <input type="number" id="dias" value="0" min="0" max="30" onchange="calcularDescuentos()">
+            </div>
+            
+            <div class="form-row">
+                <label for="seguro">SEGURO:</label>
+                <select id="seguro" onchange="calcularDescuentos()">
+                    <option value="NO">NO</option>
+                    <option value="SI">SI</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <label for="seguroMonto">Monto Seguro (si aplica):</label>
+                <input type="number" id="seguroMonto" value="0" min="0" onchange="calcularDescuentos()">
+            </div>
+            
+            <div class="form-row">
+                <label for="otros">OTROS:</label>
+                <input type="number" id="otros" value="0" min="0" onchange="calcularDescuentos()">
+            </div>
+        </div>
+        
+        <div class="result-section">
+            <div class="result-row">
+                <span>Descuento HR. ATRASO:</span>
+                <span id="descAtraso">$0</span>
+            </div>
+            <div class="result-row">
+                <span>Descuento HR. INCUMPLIMIENTO:</span>
+                <span id="descIncumplimiento">$0</span>
+            </div>
+            <div class="result-row">
+                <span>Descuento DIAS:</span>
+                <span id="descDias">$0</span>
+            </div>
+            <div class="result-row">
+                <span>Descuento SEGURO:</span>
+                <span id="descSeguro">$0</span>
+            </div>
+            <div class="result-row">
+                <span>Descuento OTROS:</span>
+                <span id="descOtros">$0</span>
+            </div>
+            <div class="result-row total-row">
+                <span>TOTAL DESCUENTOS:</span>
+                <span id="totalDescuentos">$0</span>
+            </div>
+            <div class="result-row total-row">
+                <span>TOTAL BOLETA:</span>
+                <span id="totalBoleta">$716,705</span>
+            </div>
+            <div class="result-row">
+                <span>Total con 12.25% retención:</span>
+                <span id="totalConRetencion">$628,909</span>
+            </div>
+        </div>
+        
+        <div class="button-container">
+            <button onclick="generarPDF()">Generar PDF</button>
+        </div>
+    </div>
+    
+    <!-- Contenido para PDF (oculto) -->
+    <div id="pdf-content">
+        <table class="pdf-table">
+            <tr>
+                <td class="pdf-header">RENTA BRUTA:</td>
+                <td style="border-right: 1px solid #000;"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-rentaBruta"></td>
+                <td style="border: none; background: white;"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">JORNADA HR. SEMANAL:</td>
+                <td style="border-right: 1px solid #000;"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-jornada"></td>
+                <td style="border: none; background: white;"></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="height: 20px; border: none;"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header" colspan="2">DETALLE DESCUENTOS</td>
+                <td class="pdf-header pdf-center">CANTIDAD</td>
+                <td class="pdf-header pdf-center">$ DESC</td>
+            </tr>
+            <tr>
+                <td>HR. ATRASO</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-hrAtraso"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descAtraso"></td>
+            </tr>
+            <tr>
+                <td>HR. INCUMPLIMIENTO</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-hrIncumplimiento"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descIncumplimiento"></td>
+            </tr>
+            <tr>
+                <td>DIAS</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-dias"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descDias"></td>
+            </tr>
+            <tr>
+                <td>SEGURO</td>
+                <td class="pdf-center pdf-narrow" id="pdf-seguroSiNo"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-seguroMonto"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descSeguro"></td>
+            </tr>
+            <tr>
+                <td>OTROS</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-otros"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descOtros"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">TOTAL</td>
+                <td style="border: none; background: white;"></td>
+                <td style="border: none; background: white;"></td>
+                <td class="pdf-center pdf-header" id="pdf-totalDescuentos"></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="height: 20px; border: none;"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">TOTAL BOLETA</td>
+                <td style="border: none; background: white;"></td>
+                <td style="border: none; background: white;"></td>
+                <td class="pdf-center pdf-header" id="pdf-totalBoleta"></td>
+            </tr>
+        </table>
+    </div>
+    
+    <script>
+        function formatearNumero(numero) {
+            return numero.toLocaleString('es-CL');
+        }
+        
+        function calcularDescuentos() {
+            const rentaBruta = parseFloat(document.getElementById('rentaBruta').value) || 0;
+            const jornada = parseFloat(document.getElementById('jornada').value) || 44;
+            const hrAtraso = parseFloat(document.getElementById('hrAtraso').value) || 0;
+            const hrIncumplimiento = parseFloat(document.getElementById('hrIncumplimiento').value) || 0;
+            const dias = parseFloat(document.getElementById('dias').value) || 0;
+            const seguro = document.getElementById('seguro').value;
+            const seguroMonto = parseFloat(document.getElementById('seguroMonto').value) || 0;
+            const otros = parseFloat(document.getElementById('otros').value) || 0;
+            
+            // Calcular descuentos según las fórmulas del Excel
+            const valorHora = rentaBruta / (jornada * 4);
+            const descuentoAtraso = Math.round(valorHora * hrAtraso);
+            const descuentoIncumplimiento = Math.round(valorHora * hrIncumplimiento);
+            const descuentoDias = Math.round((rentaBruta / 30) * dias);
+            const descuentoSeguro = seguro === 'SI' ? seguroMonto : 0;
+            const descuentoOtros = otros;
+            
+            const totalDescuentos = descuentoAtraso + descuentoIncumplimiento + descuentoDias + descuentoSeguro + descuentoOtros;
+            const totalBoleta = rentaBruta - totalDescuentos;
+            const totalConRetencion = totalBoleta * 0.8775; // 100% - 12.25% = 87.75%
+            
+            // Actualizar la vista
+            document.getElementById('descAtraso').textContent = '$' + formatearNumero(descuentoAtraso);
+            document.getElementById('descIncumplimiento').textContent = '$' + formatearNumero(descuentoIncumplimiento);
+            document.getElementById('descDias').textContent = '$' + formatearNumero(descuentoDias);
+            document.getElementById('descSeguro').textContent = '$' + formatearNumero(descuentoSeguro);
+            document.getElementById('descOtros').textContent = '$' + formatearNumero(descuentoOtros);
+            document.getElementById('totalDescuentos').textContent = '$' + formatearNumero(totalDescuentos);
+            document.getElementById('totalBoleta').textContent = '$' + formatearNumero(Math.round(totalBoleta));
+            document.getElementById('totalConRetencion').textContent = '$' + formatearNumero(Math.round(totalConRetencion));
+        }
+        
+        function actualizarPDF() {
+            const rentaBruta = parseFloat(document.getElementById('rentaBruta').value) || 0;
+            const jornada = parseFloat(document.getElementById('jornada').value) || 44;
+            const hrAtraso = parseFloat(document.getElementById('hrAtraso').value) || 0;
+            const hrIncumplimiento = parseFloat(document.getElementById('hrIncumplimiento').value) || 0;
+            const dias = parseFloat(document.getElementById('dias').value) || 0;
+            const seguro = document.getElementById('seguro').value;
+            const seguroMonto = parseFloat(document.getElementById('seguroMonto').value) || 0;
+            const otros = parseFloat(document.getElementById('otros').value) || 0;
+            
+            // Calcular descuentos
+            const valorHora = rentaBruta / (jornada * 4);
+            const descuentoAtraso = Math.round(valorHora * hrAtraso);
+            const descuentoIncumplimiento = Math.round(valorHora * hrIncumplimiento);
+            const descuentoDias = Math.round((rentaBruta / 30) * dias);
+            const descuentoSeguro = seguro === 'SI' ? seguroMonto : 0;
+            const descuentoOtros = otros;
+            
+            const totalDescuentos = descuentoAtraso + descuentoIncumplimiento + descuentoDias + descuentoSeguro + descuentoOtros;
+            const totalBoleta = rentaBruta - totalDescuentos;
+            const totalConRetencion = totalBoleta * 0.8775;
+            
+            // Actualizar valores en el PDF
+            document.getElementById('pdf-rentaBruta').textContent = formatearNumero(rentaBruta);
+            document.getElementById('pdf-jornada').textContent = jornada;
+            document.getElementById('pdf-hrAtraso').textContent = hrAtraso || '-';
+            document.getElementById('pdf-descAtraso').textContent = descuentoAtraso ? formatearNumero(descuentoAtraso) : '-';
+            document.getElementById('pdf-hrIncumplimiento').textContent = hrIncumplimiento || '-';
+            document.getElementById('pdf-descIncumplimiento').textContent = descuentoIncumplimiento ? formatearNumero(descuentoIncumplimiento) : '-';
+            document.getElementById('pdf-dias').textContent = dias || '-';
+            document.getElementById('pdf-descDias').textContent = descuentoDias ? formatearNumero(descuentoDias) : '-';
+            document.getElementById('pdf-seguroSiNo').textContent = seguro;
+            document.getElementById('pdf-seguroMonto').textContent = seguroMonto ? formatearNumero(seguroMonto) : '-';
+            document.getElementById('pdf-descSeguro').textContent = descuentoSeguro ? formatearNumero(descuentoSeguro) : '-';
+            document.getElementById('pdf-otros').textContent = otros || '-';
+            document.getElementById('pdf-descOtros').textContent = descuentoOtros ? formatearNumero(descuentoOtros) : '-';
+            document.getElementById('pdf-totalDescuentos').textContent = formatearNumero(totalDescuentos);
+            document.getElementById('pdf-totalBoleta').textContent = formatearNumero(Math.round(totalBoleta));
+        }
+        
+        async function generarPDF() {
+            // Actualizar el contenido del PDF
+            actualizarPDF();
+            
+            // Mostrar temporalmente el contenido del PDF
+            const pdfContent = document.getElementById('pdf-content');
+            pdfContent.style.display = 'block';
+            
+            try {
+                // Crear una nueva instancia de jsPDF en tamaño oficio
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: [216, 356] // Tamaño oficio en mm (8.5" x 14")
+                });
+                
+                // Capturar el contenido como imagen
+                const canvas = await html2canvas(pdfContent, {
+                    scale: 2,
+                    backgroundColor: '#ffffff'
+                });
+                
+                // Agregar la imagen al PDF
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = 210; // Ancho A4 en mm (dejando márgenes)
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 3, 10, imgWidth, imgHeight);
+                
+                // Descargar el PDF
+                pdf.save('honorario_descuento.pdf');
+                
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+                alert('Error al generar el PDF. Por favor intente nuevamente.');
+            } finally {
+                // Ocultar el contenido del PDF
+                pdfContent.style.display = 'none';
+            }
+        }
+        
+        // Calcular al cargar la página
+        window.onload = function() {
+            calcularDescuentos();
+        };
+    </script>
+</body>
+</html>
