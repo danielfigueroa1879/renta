@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <title>Honorario Descuento - Generador PDF</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Poppins:wght@700;900&family=EB+Garamond:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -37,21 +37,22 @@
         }
         
         .container {
-            max-width: 800px;
+            max-width: 99%; /* Ajustado al 99% del ancho */
             margin: 20px auto;
             background-color: var(--container-bg);
             padding: 40px;
             border-radius: 24px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            /* Se cambia la sombra rosa por una azul */
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1), 0 0 25px 5px rgba(15, 105, 180, 0.4);
         }
         
         h1 {
             text-align: center;
             color: var(--primary-color);
             margin-bottom: 40px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 36px;
-            font-weight: 900;
+            font-family: 'EB Garamond', serif; /* Fuente formal para el título */
+            font-size: 42px; /* Ligeramente más grande para la nueva fuente */
+            font-weight: 700; /* Peso de fuente ajustado */
             text-transform: uppercase;
         }
         
@@ -85,10 +86,11 @@
             color: var(--text-color);
         }
         
+        /* Efecto de encendido/glow al seleccionar un campo */
         input[type="number"]:focus, select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(15, 105, 180, 0.15);
+            box-shadow: 0 0 10px 2px rgba(15, 105, 180, 0.4);
         }
         
         .descuentos-section {
@@ -179,7 +181,7 @@
         
         @media (max-width: 768px) {
             body { padding: 10px; }
-            .container { padding: 20px; }
+            .container { padding: 20px; max-width: 100%; }
             h1 { font-size: 30px; }
             
             .form-row {
