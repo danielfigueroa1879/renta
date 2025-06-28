@@ -6,8 +6,11 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
+    <!-- Meta tag para el color del tema en navegadores móviles -->
+    <meta name="theme-color" content="#0F69B4">
     <title>Honorario Descuento - Generador PDF</title>
-    <!-- Se ha añadido el grosor de fuente 400 para Poppins para permitir texto normal (no negrita) -->
+    <!-- Enlace al manifest (se generará dinámicamente) -->
+    <link id="manifest-link" rel="manifest">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -56,7 +59,7 @@
             text-align: center;
             color: var(--primary-color);
             margin-bottom: 40px;
-            font-family: 'Lato', sans-serif; /* Fuente Lato para el título */
+            font-family: 'Lato', sans-serif;
             font-size: 40px; 
             font-weight: 900; 
             text-transform: uppercase;
@@ -76,7 +79,6 @@
         
         label {
             font-family: 'Poppins', sans-serif;
-            /* Se cambió el grosor de la fuente a normal para quitar la negrita */
             font-weight: normal; 
             color: var(--label-color);
             font-size: 18px;
@@ -127,7 +129,6 @@
             font-size: 18px;
             padding: 5px 0;
             font-family: 'Poppins', sans-serif;
-            /* Se añadió grosor de fuente normal para que el texto de la descripción no esté en negrita */
             font-weight: normal; 
         }
         
@@ -230,31 +231,53 @@
         }
         
         @keyframes appear-and-fly-to-corner {
-            0% {
-                transform: translate(-50%, -50%) scale(0.8);
-                opacity: 0;
-            }
-            25% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-            }
-            75% {
-                transform: translate(-50%, -50%) scale(1);
-                opacity: 1;
-                top: 50%;
-                left: 50%;
-            }
-            100% {
-                transform: translate(0, 0) scale(0);
-                opacity: 0;
-                top: 20px;
-                left: 95%;
-            }
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            25% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            75% { transform: translate(-50%, -50%) scale(1); opacity: 1; top: 50%; left: 50%; }
+            100% { transform: translate(0, 0) scale(0); opacity: 0; top: 20px; left: 95%; }
+        }
+
+        /* --- Estilos para la Alerta de Instalación --- */
+        #install-alert {
+            position: fixed;
+            top: -100px; /* Inicia fuera de la pantalla */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            max-width: 600px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 0 0 12px 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 2000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: top 0.5s ease-out; /* Transición suave */
+        }
+
+        #install-alert.show {
+            top: 0; /* Mueve la alerta a la vista */
+        }
+
+        #install-alert button {
+            background-color: white;
+            color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 10px;
+            box-shadow: none; /* Sobrescribe estilos generales de botón */
         }
         
         @media (max-width: 768px) {
             body { padding: 10px; }
-            /* Se redujo el padding horizontal para hacer el contenedor más ancho en móviles */
             .container { padding: 15px 10px; max-width: 100%; }
             .form-row { grid-template-columns: 1fr; }
             
@@ -262,25 +285,10 @@
             label { font-size: 19px; margin-bottom: 10px; }
             input, select { font-size: 18px !important; padding: 18px; }
             
-            /* Botón más pequeño en celular */
-            button { 
-                font-size: 18px; 
-                padding: 15px 30px;
-                width: auto;
-            }
+            button { font-size: 18px; padding: 15px 30px; width: auto; }
 
-            .form-section {
-                background-color: var(--section-bg);
-                padding: 20px;
-                border-radius: 20px;
-            }
-
-            .descuentos-section, .result-section { 
-                width: 100%; 
-                margin-left: auto; 
-                margin-right: auto; 
-                padding: 20px;
-            }
+            .form-section { background-color: var(--section-bg); padding: 20px; border-radius: 20px; }
+            .descuentos-section, .result-section { width: 100%; margin-left: auto; margin-right: auto; padding: 20px; }
             .descuentos-title { font-size: 24px; }
             .result-row { font-size: 19px; }
             .total-row { font-size: 20px; }
@@ -288,6 +296,15 @@
     </style>
 </head>
 <body>
+    <!-- Alerta de Instalación de PWA -->
+    <div id="install-alert" style="display: none;">
+        <span>Instala esta app para un acceso rápido.</span>
+        <div>
+            <button id="install-button">Instalar</button>
+            <button id="close-install-alert">Luego</button>
+        </div>
+    </div>
+
     <div class="container">
         <h1>HONORARIOS</h1>
         
@@ -343,6 +360,7 @@
     </div>
     
     <div id="pdf-content">
+        <!-- Contenido del PDF (sin cambios) -->
         <table class="pdf-table">
             <tr>
                 <td class="pdf-header">RENTA BRUTA:</td>
@@ -413,8 +431,8 @@
         </table>
     </div>
 
-    <!-- Contenedor para la animación de descarga -->
     <div id="loader-overlay" class="loader-overlay">
+        <!-- Contenido del loader (sin cambios) -->
         <div class="upload-box">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M13,9V3.5L18.5,9H13Z" /></svg>
             <span>Generando PDF...</span>
@@ -455,6 +473,7 @@
         }
         
         function actualizarPDF() {
+            // Lógica de actualización de PDF (sin cambios)
             const rentaBruta = parseFloat(document.getElementById('rentaBruta').value) || 0;
             const jornada = parseFloat(document.getElementById('jornada').value) || 44;
             const hrAtraso = parseFloat(document.getElementById('hrAtraso').value) || 0;
@@ -489,6 +508,7 @@
         }
 
         async function generarPDF() {
+            // Lógica de generación de PDF (sin cambios)
             const loader = document.getElementById('loader-overlay');
             const button = document.querySelector('.button-container button');
 
@@ -520,9 +540,78 @@
             }
         }
         
+        // --- Lógica de Instalación PWA ---
+        let deferredPrompt;
+        const installAlert = document.getElementById('install-alert');
+        const installButton = document.getElementById('install-button');
+        const closeInstallAlertButton = document.getElementById('close-install-alert');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installAlert.style.display = 'flex';
+            installAlert.classList.add('show');
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                installAlert.classList.remove('show');
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`Respuesta del usuario: ${outcome}`);
+                deferredPrompt = null;
+            }
+        });
+
+        closeInstallAlertButton.addEventListener('click', () => {
+            installAlert.classList.remove('show');
+        });
+
+        window.addEventListener('appinstalled', () => {
+            deferredPrompt = null;
+            console.log('La PWA fue instalada.');
+        });
+
+        // --- Configuración de Service Worker y Manifest ---
+        function setupPWA() {
+            const swContent = `
+                self.addEventListener('fetch', (event) => {
+                    event.respondWith(fetch(event.request));
+                });
+            `;
+            const swBlob = new Blob([swContent], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register(swUrl)
+                    .then(reg => console.log('Service Worker registrado.', reg))
+                    .catch(err => console.error('Error al registrar Service Worker:', err));
+            }
+
+            const manifest = {
+                "name": "Calculadora de Honorarios",
+                "short_name": "Honorarios",
+                "start_url": ".",
+                "display": "standalone",
+                "background_color": "#f8f9fa",
+                "theme_color": "#0F69B4",
+                "description": "Calculadora de descuentos para boletas de honorarios.",
+                "icons": [
+                    { "src": "https://placehold.co/192x192/0F69B4/FFFFFF?text=Calc", "sizes": "192x192", "type": "image/png" },
+                    { "src": "https://placehold.co/512x512/0F69B4/FFFFFF?text=Calc", "sizes": "512x512", "type": "image/png" }
+                ]
+            };
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const manifestUrl = URL.createObjectURL(manifestBlob);
+            document.getElementById('manifest-link').setAttribute('href', manifestUrl);
+        }
+
+        const originalOnload = window.onload;
         window.onload = function() {
             calcularDescuentos();
+            setupPWA();
         };
+
     </script>
 </body>
 </html>
