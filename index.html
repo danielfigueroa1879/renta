@@ -178,6 +178,39 @@
         .pdf-narrow { width: 5% !important; padding: 8px 2px !important; }
         .pdf-no-bold { font-weight: normal !important; }
 
+        /* Estilos para la animación de carga */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; /* Oculto por defecto */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            flex-direction: column;
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 20px;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -226,7 +259,7 @@
                 <input type="number" id="dias" min="0" max="30" placeholder="0" oninput="calcularDescuentos()">
             </div>
             <div class="form-row">
-                <label for="seguro">¿Seguro?</label>
+                <label for="seguro">¿Aplica Seguro?</label>
                 <select id="seguro" onchange="calcularDescuentos()">
                     <option value="NO">No</option>
                     <option value="SI">Sí</option>
@@ -329,6 +362,12 @@
             </tr>
         </table>
     </div>
+
+    <!-- Contenedor para la animación de carga -->
+    <div id="loader-overlay" class="loader-overlay">
+        <div class="loader"></div>
+        <p>Generando PDF...</p>
+    </div>
     
     <script>
         function formatearNumero(numero) {
@@ -401,6 +440,9 @@
         }
 
         async function generarPDF() {
+            const loader = document.getElementById('loader-overlay');
+            loader.style.display = 'flex'; // Mostrar animación de carga
+
             actualizarPDF();
             const pdfContent = document.getElementById('pdf-content');
             pdfContent.style.display = 'block';
@@ -430,6 +472,7 @@
                 console.error('Error al generar PDF:', error);
             } finally {
                 pdfContent.style.display = 'none';
+                loader.style.display = 'none'; // Ocultar animación de carga
             }
         }
         
