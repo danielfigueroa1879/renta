@@ -153,9 +153,26 @@
             transform: translateY(-3px);
         }
         
-        #pdf-content { display: none; }
-        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-weight: bold; }
+        #pdf-content { 
+            display: none;
+            width: 816px;
+            padding: 40px;
+            background: white;
+            font-family: Arial, sans-serif;
+        }
+        .pdf-table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; font-weight: bold; }
         .pdf-table td { padding: 8px; border: 1px solid #000; text-align: left; font-weight: bold; }
+        .pdf-table td:nth-child(1) { width: 40%; }
+        .pdf-table td:nth-child(2) { width: 10%; padding-left: 4px; padding-right: 4px; }
+        .pdf-table td:nth-child(3) { width: 15%; }
+        .pdf-table td:nth-child(4) { width: 32%; }
+        .pdf-table td:nth-child(2), .pdf-table td:nth-child(3), .pdf-table td:nth-child(4) { text-align: center !important; }
+        .pdf-header { font-weight: bold; }
+        .pdf-center { text-align: center !important; }
+        .pdf-gray-bg { background-color: #d0d0d0 !important; }
+        .pdf-narrow { width: 5% !important; padding: 8px 2px !important; }
+        .pdf-no-bold { font-weight: normal !important; }
+
         
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -236,8 +253,76 @@
         </div>
     </div>
     
+    <!-- Contenido para PDF (oculto) -->
     <div id="pdf-content">
-       <!-- El contenido del PDF se mantiene funcional pero oculto -->
+        <table class="pdf-table">
+            <tr>
+                <td class="pdf-header">RENTA BRUTA:</td>
+                <td style="border-right: 1px solid #000;"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-rentaBruta"></td>
+                <td style="border: none; background: white;"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">JORNADA HR. SEMANAL:</td>
+                <td style="border-right: 1px solid #000;"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-jornada"></td>
+                <td style="border: none; background: white;"></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="height: 20px; border: none;"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">DETALLE DESCUENTOS</td>
+                <td style="border-right: 1px solid #000;"></td>
+                <td class="pdf-header pdf-center">CANTIDAD</td>
+                <td class="pdf-header pdf-center">$ DESC</td>
+            </tr>
+            <tr>
+                <td>HR. ATRASO</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-hrAtraso"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descAtraso"></td>
+            </tr>
+            <tr>
+                <td>HR. INCUMPLIMIENTO</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-hrIncumplimiento"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descIncumplimiento"></td>
+            </tr>
+            <tr>
+                <td>DIAS</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-dias"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descDias"></td>
+            </tr>
+            <tr>
+                <td>SEGURO</td>
+                <td class="pdf-center pdf-narrow" id="pdf-seguroSiNo"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-seguroMonto"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descSeguro"></td>
+            </tr>
+            <tr>
+                <td>OTROS</td>
+                <td class="pdf-center pdf-narrow"></td>
+                <td class="pdf-center pdf-gray-bg pdf-no-bold" id="pdf-otros"></td>
+                <td class="pdf-center pdf-no-bold" id="pdf-descOtros"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">TOTAL</td>
+                <td style="border: none; background: white;"></td>
+                <td style="border: none; background: white;"></td>
+                <td class="pdf-center pdf-header" id="pdf-totalDescuentos"></td>
+            </tr>
+            <tr>
+                <td colspan="4" style="height: 20px; border: none;"></td>
+            </tr>
+            <tr>
+                <td class="pdf-header">TOTAL BOLETA</td>
+                <td style="border: none; background: white;"></td>
+                <td style="border: none; background: white;"></td>
+                <td class="pdf-center pdf-header" id="pdf-totalBoleta"></td>
+            </tr>
+        </table>
     </div>
     
     <script>
@@ -275,8 +360,72 @@
             document.getElementById('totalConRetencion').textContent = '$' + formatearNumero(Math.round(totalConRetencion));
         }
         
+        function actualizarPDF() {
+            const rentaBruta = parseFloat(document.getElementById('rentaBruta').value) || 0;
+            const jornada = parseFloat(document.getElementById('jornada').value) || 44;
+            const hrAtraso = parseFloat(document.getElementById('hrAtraso').value) || 0;
+            const hrIncumplimiento = parseFloat(document.getElementById('hrIncumplimiento').value) || 0;
+            const dias = parseFloat(document.getElementById('dias').value) || 0;
+            const seguro = document.getElementById('seguro').value;
+            const seguroMonto = parseFloat(document.getElementById('seguroMonto').value) || 0;
+            const otros = parseFloat(document.getElementById('otros').value) || 0;
+            
+            const valorHora = (jornada > 0) ? rentaBruta / (jornada * 4) : 0;
+            const descuentoAtraso = Math.round(valorHora * hrAtraso);
+            const descuentoIncumplimiento = Math.round(valorHora * hrIncumplimiento);
+            const descuentoDias = Math.round((rentaBruta / 30) * dias);
+            const descuentoSeguro = seguro === 'SI' ? seguroMonto : 0;
+            const totalDescuentos = descuentoAtraso + descuentoIncumplimiento + descuentoDias + descuentoSeguro + otros;
+            const totalBoleta = rentaBruta - totalDescuentos;
+            
+            document.getElementById('pdf-rentaBruta').textContent = formatearNumero(rentaBruta);
+            document.getElementById('pdf-jornada').textContent = jornada;
+            document.getElementById('pdf-hrAtraso').textContent = hrAtraso || '-';
+            document.getElementById('pdf-descAtraso').textContent = descuentoAtraso ? formatearNumero(descuentoAtraso) : '-';
+            document.getElementById('pdf-hrIncumplimiento').textContent = hrIncumplimiento || '-';
+            document.getElementById('pdf-descIncumplimiento').textContent = descuentoIncumplimiento ? formatearNumero(descuentoIncumplimiento) : '-';
+            document.getElementById('pdf-dias').textContent = dias || '-';
+            document.getElementById('pdf-descDias').textContent = descuentoDias ? formatearNumero(descuentoDias) : '-';
+            document.getElementById('pdf-seguroSiNo').textContent = seguro;
+            document.getElementById('pdf-seguroMonto').textContent = seguroMonto ? formatearNumero(seguroMonto) : '-';
+            document.getElementById('pdf-descSeguro').textContent = descuentoSeguro ? formatearNumero(descuentoSeguro) : '-';
+            document.getElementById('pdf-otros').textContent = otros || '-';
+            document.getElementById('pdf-descOtros').textContent = otros ? formatearNumero(otros) : '-';
+            document.getElementById('pdf-totalDescuentos').textContent = formatearNumero(totalDescuentos);
+            document.getElementById('pdf-totalBoleta').textContent = formatearNumero(Math.round(totalBoleta));
+        }
+
         async function generarPDF() {
-            // La lógica para generar PDF se mantiene igual
+            actualizarPDF();
+            const pdfContent = document.getElementById('pdf-content');
+            pdfContent.style.display = 'block';
+            
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'letter'
+                });
+                
+                const canvas = await html2canvas(pdfContent, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    useCORS: true 
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('honorario_descuento.pdf');
+                
+            } catch (error) {
+                console.error('Error al generar PDF:', error);
+            } finally {
+                pdfContent.style.display = 'none';
+            }
         }
         
         window.onload = function() {
