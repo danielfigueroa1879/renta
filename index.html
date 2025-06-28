@@ -7,7 +7,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <title>Honorario Descuento - Generador PDF</title>
-    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <!-- Se ha añadido el grosor de fuente 400 para Poppins para permitir texto normal (no negrita) -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -74,8 +75,9 @@
         }
         
         label {
-            font-family: 'Poppins', sans-serif; /* Fuente Poppins para el resto */
-            font-weight: 700;
+            font-family: 'Poppins', sans-serif;
+            /* Se cambió el grosor de la fuente a normal para quitar la negrita */
+            font-weight: normal; 
             color: var(--label-color);
             font-size: 18px;
         }
@@ -125,6 +127,8 @@
             font-size: 18px;
             padding: 5px 0;
             font-family: 'Poppins', sans-serif;
+            /* Se añadió grosor de fuente normal para que el texto de la descripción no esté en negrita */
+            font-weight: normal; 
         }
         
         .result-row span:last-child {
@@ -250,7 +254,8 @@
         
         @media (max-width: 768px) {
             body { padding: 10px; }
-            .container { padding: 15px; max-width: 100%; }
+            /* Se redujo el padding horizontal para hacer el contenedor más ancho en móviles */
+            .container { padding: 15px 10px; max-width: 100%; }
             .form-row { grid-template-columns: 1fr; }
             
             h1 { font-size: 34px; }
