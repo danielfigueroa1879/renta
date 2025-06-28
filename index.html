@@ -7,6 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="format-detection" content="telephone=no">
     <title>Honorario Descuento - Generador PDF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
@@ -20,6 +21,11 @@
             font-family: Arial, sans-serif;
             background-color: #f5f5f5;
             padding: 20px;
+        }
+        
+        h1, .descuentos-title, label {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
         }
         
         .container {
@@ -50,8 +56,9 @@
         }
         
         label {
-            font-weight: bold;
+            font-weight: 600;
             color: #555;
+            font-family: 'Poppins', sans-serif;
         }
         
         input[type="number"], input[type="text"], select {
@@ -67,6 +74,11 @@
             border-color: #4CAF50;
         }
         
+        input[type="number"]::-webkit-input-placeholder { color: #ccc; }
+        input[type="number"]::-moz-placeholder { color: #ccc; }
+        input[type="number"]:-ms-input-placeholder { color: #ccc; }
+        input[type="number"]::placeholder { color: #ccc; }
+        
         .descuentos-section {
             background-color: #f9f9f9;
             padding: 20px;
@@ -76,9 +88,10 @@
         
         .descuentos-title {
             font-size: 18px;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 15px;
             color: #333;
+            font-family: 'Poppins', sans-serif;
         }
         
         .result-section {
@@ -376,17 +389,17 @@
             
             <div class="form-row">
                 <label for="hrAtraso">HR. ATRASO:</label>
-                <input type="number" id="hrAtraso" value="0" min="0" onchange="calcularDescuentos()">
+                <input type="number" id="hrAtraso" min="0" placeholder="0" onchange="calcularDescuentos()">
             </div>
             
             <div class="form-row">
                 <label for="hrIncumplimiento">HR. INCUMPLIMIENTO:</label>
-                <input type="number" id="hrIncumplimiento" value="0" min="0" onchange="calcularDescuentos()">
+                <input type="number" id="hrIncumplimiento" min="0" placeholder="0" onchange="calcularDescuentos()">
             </div>
             
             <div class="form-row">
                 <label for="dias">DIAS:</label>
-                <input type="number" id="dias" value="0" min="0" max="30" onchange="calcularDescuentos()">
+                <input type="number" id="dias" min="0" max="30" placeholder="0" onchange="calcularDescuentos()">
             </div>
             
             <div class="form-row">
@@ -399,12 +412,12 @@
             
             <div class="form-row">
                 <label for="seguroMonto">Monto Seguro (si aplica):</label>
-                <input type="number" id="seguroMonto" value="0" min="0" onchange="calcularDescuentos()">
+                <input type="number" id="seguroMonto" min="0" placeholder="0" onchange="calcularDescuentos()">
             </div>
             
             <div class="form-row">
                 <label for="otros">OTROS:</label>
-                <input type="number" id="otros" value="0" min="0" onchange="calcularDescuentos()">
+                <input type="number" id="otros" min="0" placeholder="0" onchange="calcularDescuentos()">
             </div>
         </div>
         
