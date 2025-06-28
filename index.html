@@ -277,7 +277,7 @@
 
         /* Se añade un margen sutil solo al botón "Luego" para separarlo del botón "Instalar" */
         #close-install-alert {
-            margin-left: 8px;
+            margin-left: 16px;
         }
         
         @media (max-width: 768px) {
@@ -612,6 +612,9 @@
 
         const originalOnload = window.onload;
         window.onload = function() {
+            if(originalOnload) {
+                originalOnload();
+            }
             calcularDescuentos();
             setupPWA();
         };
